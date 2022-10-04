@@ -14,6 +14,8 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
 
     var photos: List<PhotoResponse> = emptyList()
 
+    var onClickPhoto: (PhotoResponse) -> Unit = {}
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         ViewHolder(
@@ -31,10 +33,21 @@ class PhotoAdapter : RecyclerView.Adapter<PhotoAdapter.ViewHolder>() {
 
     override fun getItemCount(): Int = photos.size
 
-    class ViewHolder(
+    inner class ViewHolder(
         private var binding: ItemPhotoBinding
 
     ) : RecyclerView.ViewHolder(binding.root) {
+
+        init {
+            binding.root.setOnClickListener{
+                onClickPhoto(photos[adapterPosition])
+                //클릭당시의 어뎁터포지션의 포토를 이벤트로 전달
+
+
+            }
+
+
+        }
 
 
         fun bind(photo: PhotoResponse) {
