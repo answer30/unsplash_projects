@@ -2,17 +2,20 @@ package com.answere2022.unsplash_projects
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.ActionMode
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.answere2022.unsplash_projects.data.Repository
@@ -26,6 +29,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.util.jar.Manifest
 
 class MainActivity : AppCompatActivity() {
 
@@ -40,7 +44,15 @@ class MainActivity : AppCompatActivity() {
         initView()
         bindViews()
 
-        fetchRandomPhotos()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            fetchRandomPhotos()
+
+        } else {
+            requestWriteStoragePermission()
+
+        }
+
 
     }
 
@@ -48,6 +60,27 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         scope.cancel()
     }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        val writeExternalStorePermissionGranted =
+            requestCode == REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+
+
+
+        if (writeExternalStorePermissionGranted){
+            fetchRandomPhotos()
+        }
+
+    }
+
 
     private fun initView() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
@@ -87,6 +120,18 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+
+    private fun requestWriteStoragePermission() {
+
+        ActivityCompat.requestPermissions(
+            this, arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+            REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION
+        )
+
+
+    }
+
 
     //사진 부분 로딩 완료 후 처리
     private fun fetchRandomPhotos(query: String? = null) = scope.launch {
@@ -241,6 +286,11 @@ class MainActivity : AppCompatActivity() {
         Snackbar.make(binding.root, "다운로드완료", Snackbar.LENGTH_SHORT).show()
 
 
+    }
+
+    companion object {
+
+        private const val REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 101
     }
 
 }
